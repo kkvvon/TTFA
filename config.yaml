@@ -1,0 +1,59 @@
+# ── Dataset (set per experiment) ──────────────────────────────────────────────
+data_path: ./data
+dataset: DATASET                 # change to your dataset name
+checkpoint_dir: ./saved/price_DATASET   # change to match feature and dataset
+
+# ── Data loading ──────────────────────────────────────────────────────────────
+# For SASRec baseline: omit the item block entirely
+# For price / sales_rank: item: [item_id, title, price, sales_rank]
+# For review_emb:         item: [item_id, title, price, sales_rank, review_emb]
+# For desc_emb:           item: [item_id, title, price, sales_rank, desc_emb]
+load_col:
+    inter: [user_id, item_id, timestamp]
+    item: [item_id, title, price, sales_rank]
+
+loss_type: CE
+train_neg_sample_args: ~
+stopping_step: 10
+user_inter_num_interval: "[10,inf)"
+item_inter_num_interval: "[10,inf)"
+MAX_ITEM_LIST_LENGTH: 50
+
+# ── Side feature (SASRec_AddInfo only; remove these lines for SASRec baseline) ─
+# item_additional_feature choices: price | sales_rank | review_emb | desc_emb
+# side_feature_size: 1 for scalar features (price, sales_rank); 64 for embeddings
+# n_heads: 1 when side_feature_size=1; 2 when side_feature_size=64
+item_additional_feature: price
+side_feature_size: 1
+n_heads: 1
+freeze_side_feature: False
+freeze_Rec_Params: False
+load_pretrain: False
+pretrained_name: ''
+
+n_layers: 2
+hidden_size: 64
+inner_size: 256
+hidden_dropout_prob: 0.2
+attn_dropout_prob: 0.2
+hidden_act: gelu
+layer_norm_eps: 1e-12
+initializer_range: 0.02
+
+eval_args:
+    split: {LS: valid_and_test}
+    order: TO
+    group_by: user
+    mode: full
+
+epochs: 300
+train_batch_size: 512
+learner: adam
+learning_rate: 0.001
+eval_step: 1
+weight_decay: 0.0
+
+metrics: ['Recall', 'NDCG', 'MRR']
+valid_metric: NDCG@10
+eval_batch_size: 4096
+topk: [5, 10, 20]
